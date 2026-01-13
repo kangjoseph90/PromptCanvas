@@ -1,0 +1,373 @@
+/* PromptCanvas - Modal UI Styles (Refined) */
+
+:root {
+  --pc-bg-primary: #1a1a2e;
+  --pc-bg-secondary: #242442;
+  --pc-bg-tertiary: #2d2d4a;
+  --pc-bg-input: #1e1e36;
+  --pc-text-primary: #f0f0f8;
+  --pc-text-secondary: #9898b8;
+  --pc-text-muted: #5c5c7a;
+  --pc-accent: #7c3aed;
+  --pc-accent-hover: #8b5cf6;
+  --pc-accent-light: rgba(124, 58, 237, 0.12);
+  --pc-border: #3a3a5c;
+  --pc-border-light: #2e2e4a;
+  --pc-success: #22c55e;
+  --pc-danger: #ef4444;
+  --pc-radius: 16px;
+  --pc-radius-md: 10px;
+  --pc-radius-sm: 6px;
+  --pc-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  --pc-transition: 150ms ease;
+}
+
+/* Modal Overlay */
+.promptcanvas-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483647;
+  opacity: 0;
+  transition: opacity var(--pc-transition);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.promptcanvas-overlay.visible {
+  opacity: 1;
+}
+
+/* Modal Container */
+.promptcanvas-modal {
+  background: var(--pc-bg-primary);
+  border-radius: var(--pc-radius);
+  box-shadow: var(--pc-shadow);
+  border: 1px solid var(--pc-border);
+  width: 92%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.96) translateY(8px);
+  transition: transform var(--pc-transition);
+  overflow: hidden;
+}
+
+.promptcanvas-overlay.visible .promptcanvas-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.promptcanvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pc-border-light);
+  background: var(--pc-bg-secondary);
+  flex-shrink: 0;
+}
+
+.promptcanvas-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pc-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promptcanvas-title::before {
+  content: '📝';
+  font-size: 16px;
+}
+
+.promptcanvas-close {
+  background: transparent;
+  border: none;
+  color: var(--pc-text-muted);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--pc-radius-sm);
+  transition: all var(--pc-transition);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.promptcanvas-close:hover {
+  background: var(--pc-bg-tertiary);
+  color: var(--pc-text-primary);
+}
+
+/* Modal Body */
+.promptcanvas-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Form Sections */
+.promptcanvas-section {
+  margin-bottom: 16px;
+}
+
+.promptcanvas-section:last-child {
+  margin-bottom: 0;
+}
+
+.promptcanvas-section-header {
+  margin-bottom: 10px;
+}
+
+.promptcanvas-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Form Fields */
+.promptcanvas-field {
+  margin-bottom: 12px;
+}
+
+.promptcanvas-field:last-child {
+  margin-bottom: 0;
+}
+
+.promptcanvas-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pc-text-secondary);
+  margin-bottom: 6px;
+}
+
+.promptcanvas-input,
+.promptcanvas-select,
+.promptcanvas-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--pc-bg-input);
+  border: 1px solid var(--pc-border-light);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-text-primary);
+  font-size: 13px;
+  transition: all var(--pc-transition);
+  box-sizing: border-box;
+}
+
+.promptcanvas-input:focus,
+.promptcanvas-select:focus,
+.promptcanvas-textarea:focus {
+  outline: none;
+  border-color: var(--pc-accent);
+  background: var(--pc-bg-tertiary);
+}
+
+.promptcanvas-input::placeholder,
+.promptcanvas-textarea::placeholder {
+  color: var(--pc-text-muted);
+}
+
+.promptcanvas-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%239898b8' d='M1 3l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* Static Field */
+.promptcanvas-static {
+  padding: 10px 12px;
+  background: var(--pc-bg-secondary);
+  border: 1px dashed var(--pc-border-light);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-text-muted);
+  font-size: 13px;
+}
+
+/* Array Container */
+.promptcanvas-array-container {
+  margin-top: 6px;
+}
+
+.promptcanvas-array-item {
+  background: var(--pc-bg-secondary);
+  border: 1px solid var(--pc-border-light);
+  border-radius: var(--pc-radius-md);
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: border-color var(--pc-transition);
+}
+
+.promptcanvas-array-item:hover {
+  border-color: var(--pc-border);
+}
+
+.promptcanvas-array-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--pc-border-light);
+}
+
+.promptcanvas-array-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pc-accent);
+}
+
+.promptcanvas-array-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--pc-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all var(--pc-transition);
+}
+
+.promptcanvas-array-item-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--pc-danger);
+}
+
+/* Add Button */
+.promptcanvas-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  background: var(--pc-accent-light);
+  border: 1px dashed var(--pc-accent);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-accent);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--pc-transition);
+}
+
+.promptcanvas-add-btn:hover {
+  background: var(--pc-accent);
+  color: white;
+  border-style: solid;
+}
+
+/* Nested Objects */
+.promptcanvas-nested {
+  padding-left: 12px;
+  border-left: 2px solid var(--pc-border-light);
+  margin-left: 4px;
+}
+
+/* Modal Footer */
+.promptcanvas-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--pc-border-light);
+  background: var(--pc-bg-secondary);
+  flex-shrink: 0;
+}
+
+.promptcanvas-btn {
+  padding: 8px 16px;
+  border-radius: var(--pc-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--pc-transition);
+  border: none;
+}
+
+.promptcanvas-btn-primary {
+  background: var(--pc-accent);
+  color: white;
+}
+
+.promptcanvas-btn-primary:hover {
+  background: var(--pc-accent-hover);
+}
+
+.promptcanvas-btn-secondary {
+  background: transparent;
+  color: var(--pc-text-secondary);
+}
+
+.promptcanvas-btn-secondary:hover {
+  color: var(--pc-text-primary);
+}
+
+.promptcanvas-btn-preview {
+  background: transparent;
+  color: var(--pc-text-muted);
+  margin-right: auto;
+}
+
+.promptcanvas-btn-preview:hover {
+  color: var(--pc-text-secondary);
+}
+
+/* Preview Panel */
+.promptcanvas-preview {
+  background: var(--pc-bg-input);
+  border: 1px solid var(--pc-border-light);
+  border-radius: var(--pc-radius-sm);
+  padding: 12px;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-size: 11px;
+  color: var(--pc-text-secondary);
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* Animation */
+@keyframes promptcanvas-fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.promptcanvas-array-item {
+  animation: promptcanvas-fade-in 0.15s ease-out;
+}
+
+/* Scrollbar */
+.promptcanvas-body::-webkit-scrollbar,
+.promptcanvas-preview::-webkit-scrollbar {
+  width: 5px;
+}
+
+.promptcanvas-body::-webkit-scrollbar-track,
+.promptcanvas-preview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.promptcanvas-body::-webkit-scrollbar-thumb,
+.promptcanvas-preview::-webkit-scrollbar-thumb {
+  background: var(--pc-border);
+  border-radius: 3px;
+}

@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "PromptCanvas",
+  "version": "1.0.0",
+  "description": "키워드로 트리거되는 동적 JSON 프롬프트 생성기",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "PromptCanvas - 템플릿 관리"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content-script.js"],
+      "css": ["src/ui/styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
