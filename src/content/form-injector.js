@@ -1,7 +1,7 @@
 // PromptCanvas - Form Injector
 // Injects the modal form UI into web pages
 
-import { renderForm, renderArrayItem, collectFormValues, generateOutput, parseMarker } from './form-renderer.js';
+import { renderForm, renderArrayItem, collectFormValues, generateOutput, parseMarker } from '../ui/form-renderer.js';
 
 let currentOverlay = null;
 let currentTemplate = null;

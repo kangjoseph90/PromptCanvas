@@ -52,15 +52,23 @@ export function renderField(key, marker, defaultValue = '', path = '') {
       `;
     
     case 'select':
+      const datalistId = `${fieldId}-list`;
       const optionsHtml = marker.options.map(opt => 
-        `<option value="${escapeHtml(opt)}" ${opt === defaultValue ? 'selected' : ''}>${escapeHtml(opt)}</option>`
+        `<option value="${escapeHtml(opt)}">`
       ).join('');
       return `
         <div class="promptcanvas-field">
           <label class="promptcanvas-label" for="${fieldId}">${key}</label>
-          <select class="promptcanvas-select" id="${fieldId}" data-path="${path}${key}">
+          <input type="text" 
+                 class="promptcanvas-input promptcanvas-select" 
+                 id="${fieldId}" 
+                 list="${datalistId}"
+                 data-path="${path}${key}"
+                 value="${escapeHtml(defaultValue)}"
+                 placeholder="선택 또는 직접 입력...">
+          <datalist id="${datalistId}">
             ${optionsHtml}
-          </select>
+          </datalist>
         </div>
       `;
     

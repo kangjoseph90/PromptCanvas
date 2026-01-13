@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output (can be regenerated)
+# Uncomment the next line if you want to exclude dist from git
+# dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local env files
+.env
+.env.local

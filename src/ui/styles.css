@@ -140,6 +140,7 @@
 /* Form Fields */
 .promptcanvas-field {
   margin-bottom: 12px;
+  position: relative;
 }
 
 .promptcanvas-field:last-child {
@@ -188,6 +189,19 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 32px;
+}
+
+/* Hide native datalist arrow but keep it clickable */
+.promptcanvas-select::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 32px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 /* Static Field */
