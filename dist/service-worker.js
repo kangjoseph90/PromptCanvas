@@ -104,15 +104,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
           "outputFormat": "json",
           "trigger": "/s"
         },
-        "background": "$input",
         "character": "$array:characterItem",
+        "object": "$array:objectItem",
+        "background": "$input",
         "composition": {
           "angle": "$select:eye-level|low-angle|high-angle|cinematic side view",
           "framing": "$select:medium shot|wide shot|close-up"
         },
-        "time_of_day": "$select:dawn|day|dusk|night",
-        "lighting": "$select:soft natural light|golden hour|dramatic shadows|flat lighting",
-        "object": "$array:objectItem",
+        "atmosphere": {
+          "time_of_day": "$select:dawn|day|dusk|night",
+          "lighting": "$select:soft natural light|golden hour|dramatic shadows|flat lighting",
+          "weather": "$select:clear|cloudy|rainy|snowy"
+        },
         "quality": {
           "rendering": "high-detail illustration",
           "resolution": "4K"
