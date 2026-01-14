@@ -27,8 +27,8 @@ async function saveTemplate(template) {
     id: template.id || generateId(),
     name: template.name,
     trigger: template.trigger,
-    // Store as JSON string to preserve key order
-    templateJson: typeof template.template === "string" ? template.template : JSON.stringify(template.template),
+    // Store as JSON string to preserve key order (formatted with 2-space indent)
+    templateJson: typeof template.template === "string" ? template.template : JSON.stringify(template.template, null, 2),
     createdAt: template.createdAt || now,
     updatedAt: now
   };
