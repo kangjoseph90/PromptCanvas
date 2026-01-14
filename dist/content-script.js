@@ -2,9 +2,8 @@ function parseMarker(value) {
   if (typeof value !== "string") {
     return { type: "static", value };
   }
-  const inputMatch = value.match(/^\$input:(.+)$/);
-  if (inputMatch) {
-    return { type: "input", label: inputMatch[1] };
+  if (value === "$input") {
+    return { type: "input" };
   }
   const selectMatch = value.match(/^\$select:(.+)$/);
   if (selectMatch) {
@@ -23,13 +22,13 @@ function renderField(key, marker, defaultValue = "", path = "") {
     case "input":
       return `
         <div class="promptcanvas-field">
-          <label class="promptcanvas-label" for="${fieldId}">${marker.label}</label>
+          <label class="promptcanvas-label" for="${fieldId}">${key}</label>
           <input type="text" 
                  class="promptcanvas-input" 
                  id="${fieldId}" 
                  data-path="${path}${key}"
                  value="${escapeHtml$1(defaultValue)}"
-                 placeholder="${marker.label}">
+                 placeholder="${key}">
         </div>
       `;
     case "select":

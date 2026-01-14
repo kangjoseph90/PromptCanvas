@@ -34,9 +34,8 @@
       return { type: 'static', value };
     }
 
-    const inputMatch = value.match(/^\$input:(.+)$/);
-    if (inputMatch) {
-      return { type: 'input', label: inputMatch[1] };
+    if (value === '$input') {
+      return { type: 'input' };
     }
 
     const selectMatch = value.match(/^\$select:(.+)$/);
@@ -67,13 +66,13 @@
       case 'input':
         return `
           <div class="promptcanvas-field">
-            <label class="promptcanvas-label" for="${fieldId}">${escapeHtml(marker.label)}</label>
+            <label class="promptcanvas-label" for="${fieldId}">${escapeHtml(key)}</label>
             <input type="text" 
                    class="promptcanvas-input" 
                    id="${fieldId}" 
                    data-path="${path}${key}"
                    value="${escapeHtml(defaultValue)}"
-                   placeholder="${escapeHtml(marker.label)}">
+                   placeholder="${escapeHtml(key)}">
           </div>
         `;
 

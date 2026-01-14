@@ -11,9 +11,8 @@ export function parseMarker(value) {
   }
 
   // Check for marker patterns
-  const inputMatch = value.match(/^\$input:(.+)$/);
-  if (inputMatch) {
-    return { type: 'input', label: inputMatch[1] };
+  if (value === '$input') {
+    return { type: 'input' };
   }
 
   const selectMatch = value.match(/^\$select:(.+)$/);
@@ -41,13 +40,13 @@ export function renderField(key, marker, defaultValue = '', path = '') {
     case 'input':
       return `
         <div class="promptcanvas-field">
-          <label class="promptcanvas-label" for="${fieldId}">${marker.label}</label>
+          <label class="promptcanvas-label" for="${fieldId}">${key}</label>
           <input type="text" 
                  class="promptcanvas-input" 
                  id="${fieldId}" 
                  data-path="${path}${key}"
                  value="${escapeHtml(defaultValue)}"
-                 placeholder="${marker.label}">
+                 placeholder="${key}">
         </div>
       `;
 

@@ -79,23 +79,25 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       template: {
         "$schemas": {
           "characterItem": {
-            "appearance": "$input:외모",
-            "doing_what": "$input:행동",
+            "appearance": "$input",
+            "expression": "$input",
+            "action": "$input",
             "placement": "$select:center|left side|right side|foreground|background"
           }
         },
-        "$schemas.objectItem": "$input:오브젝트",
         "_meta": {
           "name": "장면",
           "outputFormat": "json",
           "trigger": "/s"
         },
-        "background": "$input:배경",
+        "background": "$input",
         "character": "$array:characterItem",
         "composition": {
           "angle": "$select:eye-level|low-angle|high-angle|cinematic side view",
           "framing": "$select:medium shot|wide shot|close-up"
         },
+        "time_of_day": "$select:dawn|day|dusk|night",
+        "lighting": "$select:soft natural light|golden hour|dramatic shadows|flat lighting",
         "object": "$array:objectItem",
         "quality": {
           "rendering": "high-detail illustration",
@@ -117,7 +119,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
           "outputFormat": "json",
           "trigger": "/r"
         },
-        "subject": "$input:캐릭터/오브젝트",
+        "subject": "$input",
         "background": "plain white background",
         "composition": {
           "type": "character reference sheet, three-view orthographic",
