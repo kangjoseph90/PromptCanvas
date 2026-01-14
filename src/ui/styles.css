@@ -1,33 +1,32 @@
 /* PromptCanvas - Modal UI Styles (Refined) */
 
 :root {
-  --pc-bg-primary: #1a1a2e;
-  --pc-bg-secondary: #242442;
-  --pc-bg-tertiary: #2d2d4a;
-  --pc-bg-input: #1e1e36;
-  --pc-text-primary: #f0f0f8;
-  --pc-text-secondary: #9898b8;
-  --pc-text-muted: #5c5c7a;
-  --pc-accent: #7c3aed;
-  --pc-accent-hover: #8b5cf6;
-  --pc-accent-light: rgba(124, 58, 237, 0.12);
-  --pc-border: #3a3a5c;
-  --pc-border-light: #2e2e4a;
-  --pc-success: #22c55e;
-  --pc-danger: #ef4444;
-  --pc-radius: 16px;
-  --pc-radius-md: 10px;
-  --pc-radius-sm: 6px;
-  --pc-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  --pc-transition: 150ms ease;
+  --pc-bg-primary: #141414;
+  --pc-bg-secondary: #1c1c1c;
+  --pc-bg-tertiary: #262626;
+  --pc-bg-input: #1a1a1a;
+  --pc-text-primary: #f5f5f5;
+  --pc-text-secondary: #a3a3a3;
+  --pc-text-muted: #6b6b6b;
+  --pc-accent: #525252;
+  --pc-accent-hover: #737373;
+  --pc-accent-light: rgba(82, 82, 82, 0.15);
+  --pc-border: #3d3d3d;
+  --pc-border-light: #2a2a2a;
+  --pc-success: #a3a3a3;
+  --pc-danger: #8b8b8b;
+  --pc-radius: 12px;
+  --pc-radius-md: 8px;
+  --pc-radius-sm: 4px;
+  --pc-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --pc-transition: 0ms;
 }
 
 /* Modal Overlay */
 .promptcanvas-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,13 +53,7 @@
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  transform: scale(0.96) translateY(8px);
-  transition: transform var(--pc-transition);
   overflow: hidden;
-}
-
-.promptcanvas-overlay.visible .promptcanvas-modal {
-  transform: scale(1) translateY(0);
 }
 
 /* Modal Header */
@@ -359,15 +352,6 @@
   overflow-y: auto;
 }
 
-/* Animation */
-@keyframes promptcanvas-fade-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.promptcanvas-array-item {
-  animation: promptcanvas-fade-in 0.15s ease-out;
-}
 
 /* Scrollbar */
 .promptcanvas-body::-webkit-scrollbar,

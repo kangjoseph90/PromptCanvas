@@ -7,22 +7,23 @@
 }
 
 :root {
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #242442;
-  --bg-tertiary: #2d2d4a;
-  --bg-input: #1e1e36;
-  --text-primary: #f0f0f8;
-  --text-secondary: #9898b8;
-  --text-muted: #5c5c7a;
-  --accent: #7c3aed;
-  --accent-hover: #8b5cf6;
-  --accent-light: rgba(124, 58, 237, 0.12);
-  --border: #3a3a5c;
-  --border-light: #2e2e4a;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --radius: 10px;
-  --radius-sm: 6px;
+  --bg-primary: #141414;
+  --bg-secondary: #1c1c1c;
+  --bg-tertiary: #262626;
+  --bg-input: #1a1a1a;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b6b6b;
+  --accent: #525252;
+  --accent-hover: #737373;
+  --accent-light: rgba(82, 82, 82, 0.15);
+  --border: #3d3d3d;
+  --border-light: #2a2a2a;
+  --success: #a3a3a3;
+  --danger: #8b8b8b;
+  --radius: 8px;
+  --radius-sm: 4px;
+
 }
 
 body {
@@ -70,7 +71,7 @@ body {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: none;
   border: none;
 }
 
@@ -119,7 +120,7 @@ body {
   height: 28px;
   border-radius: var(--radius-sm);
   font-size: 14px;
-  transition: all 0.15s ease;
+  transition: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,7 +200,7 @@ body {
   border-radius: var(--radius-sm);
   margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: none;
 }
 
 .template-item:hover {
@@ -232,7 +233,7 @@ body {
   display: flex;
   gap: 4px;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: none;
 }
 
 .template-item:hover .template-actions {

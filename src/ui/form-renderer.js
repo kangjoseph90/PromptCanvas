@@ -9,24 +9,24 @@ export function parseMarker(value) {
   if (typeof value !== 'string') {
     return { type: 'static', value };
   }
-  
+
   // Check for marker patterns
   const inputMatch = value.match(/^\$input:(.+)$/);
   if (inputMatch) {
     return { type: 'input', label: inputMatch[1] };
   }
-  
+
   const selectMatch = value.match(/^\$select:(.+)$/);
   if (selectMatch) {
     const options = selectMatch[1].split('|').map(o => o.trim());
     return { type: 'select', label: options[0], options };
   }
-  
+
   const arrayMatch = value.match(/^\$array:(.+)$/);
   if (arrayMatch) {
     return { type: 'array', schemaName: arrayMatch[1] };
   }
-  
+
   // No marker - static value
   return { type: 'static', value };
 }
@@ -36,7 +36,7 @@ export function parseMarker(value) {
  */
 export function renderField(key, marker, defaultValue = '', path = '') {
   const fieldId = `pc-field-${path}${key}`.replace(/\./g, '-');
-  
+
   switch (marker.type) {
     case 'input':
       return `
@@ -50,10 +50,10 @@ export function renderField(key, marker, defaultValue = '', path = '') {
                  placeholder="${marker.label}">
         </div>
       `;
-    
+
     case 'select':
       const datalistId = `${fieldId}-list`;
-      const optionsHtml = marker.options.map(opt => 
+      const optionsHtml = marker.options.map(opt =>
         `<option value="${escapeHtml(opt)}">`
       ).join('');
       return `
@@ -71,7 +71,7 @@ export function renderField(key, marker, defaultValue = '', path = '') {
           </datalist>
         </div>
       `;
-    
+
     case 'static':
       return `
         <div class="promptcanvas-field">
@@ -79,7 +79,7 @@ export function renderField(key, marker, defaultValue = '', path = '') {
           <div class="promptcanvas-static" data-path="${path}${key}" data-static="true">${escapeHtml(marker.value)}</div>
         </div>
       `;
-    
+
     default:
       return '';
   }
@@ -91,15 +91,14 @@ export function renderField(key, marker, defaultValue = '', path = '') {
 export function renderArrayField(key, schemaName, schemas, items = [], path = '') {
   const arrayPath = `${path}${key}`;
   const schema = schemas[schemaName] || schemas[`$schemas.${schemaName}`];
-  
+
   let itemsHtml = '';
-  
-  // Render existing items (or one empty item if none)
-  const itemsToRender = items.length > 0 ? items : [{}];
-  itemsToRender.forEach((item, index) => {
+
+  // Render existing items (allow empty arrays - length 0)
+  items.forEach((item, index) => {
     itemsHtml += renderArrayItem(key, index, schema, schemas, item, arrayPath);
   });
-  
+
   return `
     <div class="promptcanvas-section">
       <div class="promptcanvas-section-header">
@@ -120,13 +119,20 @@ export function renderArrayField(key, schemaName, schemas, items = [], path = ''
  */
 export function renderArrayItem(key, index, schema, schemas, values = {}, arrayPath = '') {
   const itemPath = `${arrayPath}[${index}].`;
-  
+
   let fieldsHtml = '';
-  
+
   // Handle simple string schema (e.g., "$input:Label")
   if (typeof schema === 'string') {
     const marker = parseMarker(schema);
-    fieldsHtml = renderField('value', marker, values || '', itemPath);
+    // Extract the actual value: could be string, or object with 'value' key, or undefined
+    let defaultValue = '';
+    if (typeof values === 'string') {
+      defaultValue = values;
+    } else if (values && typeof values === 'object' && 'value' in values) {
+      defaultValue = values.value;
+    }
+    fieldsHtml = renderField('value', marker, defaultValue, itemPath);
   } else {
     // Handle object schema
     for (const [fieldKey, fieldValue] of Object.entries(schema)) {
@@ -134,7 +140,7 @@ export function renderArrayItem(key, index, schema, schemas, values = {}, arrayP
       fieldsHtml += renderField(fieldKey, marker, values[fieldKey] || '', itemPath);
     }
   }
-  
+
   return `
     <div class="promptcanvas-array-item" data-array-item="${arrayPath}" data-index="${index}">
       <div class="promptcanvas-array-item-header">
@@ -154,11 +160,11 @@ export function renderArrayItem(key, index, schema, schemas, values = {}, arrayP
 export function renderNestedObject(key, obj, schemas, values = {}, path = '') {
   const nestedPath = `${path}${key}.`;
   let fieldsHtml = '';
-  
+
   for (const [fieldKey, fieldValue] of Object.entries(obj)) {
     // Skip $schemas and _meta
     if (fieldKey.startsWith('$') || fieldKey === '_meta') continue;
-    
+
     if (typeof fieldValue === 'object' && fieldValue !== null && !Array.isArray(fieldValue)) {
       // Nested object
       fieldsHtml += renderNestedObject(fieldKey, fieldValue, schemas, values[fieldKey] || {}, nestedPath);
@@ -171,7 +177,7 @@ export function renderNestedObject(key, obj, schemas, values = {}, path = '') {
       }
     }
   }
-  
+
   return `
     <div class="promptcanvas-section">
       <div class="promptcanvas-section-header">
@@ -190,18 +196,18 @@ export function renderNestedObject(key, obj, schemas, values = {}, path = '') {
 export function renderForm(template, values = {}) {
   let html = '';
   const schemas = template.$schemas || {};
-  
+
   // Also check for schemas defined with dot notation
   for (const [key, value] of Object.entries(template)) {
     if (key.startsWith('$schemas.')) {
       schemas[key] = value;
     }
   }
-  
+
   for (const [key, value] of Object.entries(template)) {
     // Skip meta fields and schema definitions
     if (key === '_meta' || key === '$schemas' || key.startsWith('$schemas.')) continue;
-    
+
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       // Nested object
       html += renderNestedObject(key, value, schemas, values[key] || {}, '');
@@ -214,7 +220,7 @@ export function renderForm(template, values = {}) {
       }
     }
   }
-  
+
   return html;
 }
 
@@ -223,7 +229,7 @@ export function renderForm(template, values = {}) {
  */
 export function collectFormValues(container) {
   const result = {};
-  
+
   // Collect regular inputs and selects
   container.querySelectorAll('.promptcanvas-input, .promptcanvas-select, .promptcanvas-textarea').forEach(el => {
     const path = el.dataset.path;
@@ -231,7 +237,7 @@ export function collectFormValues(container) {
       setNestedValue(result, path, el.value);
     }
   });
-  
+
   // Collect static values
   container.querySelectorAll('[data-static="true"]').forEach(el => {
     const path = el.dataset.path;
@@ -239,7 +245,7 @@ export function collectFormValues(container) {
       setNestedValue(result, path, el.textContent);
     }
   });
-  
+
   return result;
 }
 
@@ -248,18 +254,39 @@ export function collectFormValues(container) {
  */
 export function generateOutput(template, values) {
   const output = {};
-  
+
+  // Collect all schemas including dot notation
+  const allSchemas = { ...(template.$schemas || {}) };
+  for (const [key, value] of Object.entries(template)) {
+    if (key.startsWith('$schemas.')) {
+      const schemaName = key.replace('$schemas.', '');
+      allSchemas[schemaName] = value;
+    }
+  }
+
   for (const [key, value] of Object.entries(template)) {
     // Skip meta fields and schema definitions
     if (key === '_meta' || key === '$schemas' || key.startsWith('$schemas.')) continue;
-    
+
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       // Nested object - recursively process
-      output[key] = generateOutputObject(value, values[key] || {}, template.$schemas || {});
+      output[key] = generateOutputObject(value, values[key] || {}, allSchemas);
     } else {
       const marker = parseMarker(value);
       if (marker.type === 'array') {
-        output[key] = values[key] || [];
+        const arrValues = values[key] || [];
+        // Check if this is a simple string schema (not object schema)
+        const schemaValue = allSchemas[marker.schemaName];
+        if (typeof schemaValue === 'string') {
+          // Simple string schema - extract just the value strings
+          output[key] = arrValues.map(item => {
+            if (typeof item === 'string') return item;
+            if (item && typeof item === 'object' && 'value' in item) return item.value;
+            return '';
+          });
+        } else {
+          output[key] = arrValues;
+        }
       } else if (marker.type === 'static') {
         output[key] = marker.value;
       } else {
@@ -267,22 +294,34 @@ export function generateOutput(template, values) {
       }
     }
   }
-  
+
   return output;
 }
 
 function generateOutputObject(obj, values, schemas) {
   const output = {};
-  
+
   for (const [key, value] of Object.entries(obj)) {
     if (key.startsWith('$')) continue;
-    
+
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       output[key] = generateOutputObject(value, values[key] || {}, schemas);
     } else {
       const marker = parseMarker(value);
       if (marker.type === 'array') {
-        output[key] = values[key] || [];
+        const arrValues = values[key] || [];
+        // Check if this is a simple string schema (not object schema)
+        const schemaValue = schemas[marker.schemaName];
+        if (typeof schemaValue === 'string') {
+          // Simple string schema - extract just the value strings
+          output[key] = arrValues.map(item => {
+            if (typeof item === 'string') return item;
+            if (item && typeof item === 'object' && 'value' in item) return item.value;
+            return '';
+          });
+        } else {
+          output[key] = arrValues;
+        }
       } else if (marker.type === 'static') {
         output[key] = marker.value;
       } else {
@@ -290,7 +329,7 @@ function generateOutputObject(obj, values, schemas) {
       }
     }
   }
-  
+
   return output;
 }
 
@@ -307,7 +346,7 @@ function setNestedValue(obj, path, value) {
   const regex = /([^.\[\]]+)|\[(\d+)\]/g;
   const parts = [];
   let match;
-  
+
   while ((match = regex.exec(path)) !== null) {
     if (match[1] !== undefined) {
       parts.push(match[1]);
@@ -315,17 +354,17 @@ function setNestedValue(obj, path, value) {
       parts.push(parseInt(match[2], 10));
     }
   }
-  
+
   let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
     const nextPart = parts[i + 1];
-    
+
     if (current[part] === undefined) {
       current[part] = typeof nextPart === 'number' ? [] : {};
     }
     current = current[part];
   }
-  
+
   current[parts[parts.length - 1]] = value;
 }

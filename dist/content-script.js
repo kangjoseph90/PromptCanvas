@@ -67,8 +67,7 @@ function renderArrayField(key, schemaName, schemas, items = [], path = "") {
   const arrayPath = `${path}${key}`;
   const schema = schemas[schemaName] || schemas[`$schemas.${schemaName}`];
   let itemsHtml = "";
-  const itemsToRender = items.length > 0 ? items : [{}];
-  itemsToRender.forEach((item, index) => {
+  items.forEach((item, index) => {
     itemsHtml += renderArrayItem(key, index, schema, schemas, item, arrayPath);
   });
   return `
@@ -90,7 +89,13 @@ function renderArrayItem(key, index, schema, schemas, values = {}, arrayPath = "
   let fieldsHtml = "";
   if (typeof schema === "string") {
     const marker = parseMarker(schema);
-    fieldsHtml = renderField("value", marker, values || "", itemPath);
+    let defaultValue = "";
+    if (typeof values === "string") {
+      defaultValue = values;
+    } else if (values && typeof values === "object" && "value" in values) {
+      defaultValue = values.value;
+    }
+    fieldsHtml = renderField("value", marker, defaultValue, itemPath);
   } else {
     for (const [fieldKey, fieldValue] of Object.entries(schema)) {
       const marker = parseMarker(fieldValue);
@@ -177,14 +182,31 @@ function collectFormValues(container) {
 }
 function generateOutput(template, values) {
   const output = {};
+  const allSchemas = { ...template.$schemas || {} };
+  for (const [key, value] of Object.entries(template)) {
+    if (key.startsWith("$schemas.")) {
+      const schemaName = key.replace("$schemas.", "");
+      allSchemas[schemaName] = value;
+    }
+  }
   for (const [key, value] of Object.entries(template)) {
     if (key === "_meta" || key === "$schemas" || key.startsWith("$schemas.")) continue;
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      output[key] = generateOutputObject(value, values[key] || {}, template.$schemas || {});
+      output[key] = generateOutputObject(value, values[key] || {}, allSchemas);
     } else {
       const marker = parseMarker(value);
       if (marker.type === "array") {
-        output[key] = values[key] || [];
+        const arrValues = values[key] || [];
+        const schemaValue = allSchemas[marker.schemaName];
+        if (typeof schemaValue === "string") {
+          output[key] = arrValues.map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object" && "value" in item) return item.value;
+            return "";
+          });
+        } else {
+          output[key] = arrValues;
+        }
       } else if (marker.type === "static") {
         output[key] = marker.value;
       } else {
@@ -199,11 +221,21 @@ function generateOutputObject(obj, values, schemas) {
   for (const [key, value] of Object.entries(obj)) {
     if (key.startsWith("$")) continue;
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      output[key] = generateOutputObject(value, values[key] || {});
+      output[key] = generateOutputObject(value, values[key] || {}, schemas);
     } else {
       const marker = parseMarker(value);
       if (marker.type === "array") {
-        output[key] = values[key] || [];
+        const arrValues = values[key] || [];
+        const schemaValue = schemas[marker.schemaName];
+        if (typeof schemaValue === "string") {
+          output[key] = arrValues.map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object" && "value" in item) return item.value;
+            return "";
+          });
+        } else {
+          output[key] = arrValues;
+        }
       } else if (marker.type === "static") {
         output[key] = marker.value;
       } else {

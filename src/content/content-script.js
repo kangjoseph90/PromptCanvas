@@ -1,7 +1,7 @@
 // PromptCanvas - Content Script (Bundled)
 // Detects trigger keywords and shows modal form UI
 
-(function() {
+(function () {
   'use strict';
 
   // ===== Storage Functions =====
@@ -20,6 +20,10 @@
       return await chrome.runtime.sendMessage({ type: 'GET_TEMPLATE_BY_TRIGGER', trigger });
     } catch (e) {
       console.warn('PromptCanvas: Failed to get template', e);
+      // Check for extension context invalidated error
+      if (e.message && e.message.includes('Extension context invalidated')) {
+        alert('PromptCanvas 확장 프로그램이 업데이트되었습니다.\n페이지를 새로고침해주세요. (F5)');
+      }
       return null;
     }
   }
@@ -29,23 +33,23 @@
     if (typeof value !== 'string') {
       return { type: 'static', value };
     }
-    
+
     const inputMatch = value.match(/^\$input:(.+)$/);
     if (inputMatch) {
       return { type: 'input', label: inputMatch[1] };
     }
-    
+
     const selectMatch = value.match(/^\$select:(.+)$/);
     if (selectMatch) {
       const options = selectMatch[1].split('|').map(o => o.trim());
       return { type: 'select', label: options[0], options };
     }
-    
+
     const arrayMatch = value.match(/^\$array:(.+)$/);
     if (arrayMatch) {
       return { type: 'array', schemaName: arrayMatch[1] };
     }
-    
+
     return { type: 'static', value };
   }
 
@@ -58,7 +62,7 @@
 
   function renderField(key, marker, defaultValue = '', path = '') {
     const fieldId = `pc-field-${path}${key}`.replace(/[.\[\]]/g, '-');
-    
+
     switch (marker.type) {
       case 'input':
         return `
@@ -72,10 +76,10 @@
                    placeholder="${escapeHtml(marker.label)}">
           </div>
         `;
-      
+
       case 'select':
         const datalistId = `${fieldId}-list`;
-        const optionsHtml = marker.options.map(opt => 
+        const optionsHtml = marker.options.map(opt =>
           `<option value="${escapeHtml(opt)}">`
         ).join('');
         return `
@@ -93,7 +97,7 @@
             </datalist>
           </div>
         `;
-      
+
       case 'static':
         return `
           <div class="promptcanvas-field">
@@ -101,7 +105,7 @@
             <div class="promptcanvas-static" data-path="${path}${key}" data-static="true">${escapeHtml(marker.value)}</div>
           </div>
         `;
-      
+
       default:
         return '';
     }
@@ -110,10 +114,16 @@
   function renderArrayItem(key, index, schema, schemas, values = {}, arrayPath = '') {
     const itemPath = `${arrayPath}[${index}].`;
     let fieldsHtml = '';
-    
+
     if (typeof schema === 'string') {
       const marker = parseMarker(schema);
-      const fieldValue = typeof values === 'string' ? values : '';
+      // Extract the actual value: could be string, or object with 'value' key
+      let fieldValue = '';
+      if (typeof values === 'string') {
+        fieldValue = values;
+      } else if (values && typeof values === 'object' && 'value' in values) {
+        fieldValue = values.value;
+      }
       fieldsHtml = renderField('value', marker, fieldValue, itemPath);
     } else if (schema) {
       for (const [fieldKey, fieldValue] of Object.entries(schema)) {
@@ -121,7 +131,7 @@
         fieldsHtml += renderField(fieldKey, marker, values[fieldKey] || '', itemPath);
       }
     }
-    
+
     return `
       <div class="promptcanvas-array-item" data-array-item="${arrayPath}" data-index="${index}">
         <div class="promptcanvas-array-item-header">
@@ -138,12 +148,12 @@
   function renderArrayField(key, schemaName, schemas, items = [], path = '') {
     const arrayPath = `${path}${key}`;
     const schema = schemas[schemaName] || schemas[`$schemas.${schemaName}`];
-    
+
     let itemsHtml = '';
     items.forEach((item, index) => {
       itemsHtml += renderArrayItem(key, index, schema, schemas, item, arrayPath);
     });
-    
+
     return `
       <div class="promptcanvas-section">
         <div class="promptcanvas-section-header">
@@ -162,10 +172,10 @@
   function renderNestedObject(key, obj, schemas, values = {}, path = '') {
     const nestedPath = `${path}${key}.`;
     let fieldsHtml = '';
-    
+
     for (const [fieldKey, fieldValue] of Object.entries(obj)) {
       if (fieldKey.startsWith('$') || fieldKey === '_meta') continue;
-      
+
       if (typeof fieldValue === 'object' && fieldValue !== null && !Array.isArray(fieldValue)) {
         fieldsHtml += renderNestedObject(fieldKey, fieldValue, schemas, values[fieldKey] || {}, nestedPath);
       } else {
@@ -177,7 +187,7 @@
         }
       }
     }
-    
+
     return `
       <div class="promptcanvas-section">
         <div class="promptcanvas-section-header">
@@ -193,16 +203,16 @@
   function renderForm(template, values = {}) {
     let html = '';
     const schemas = template.$schemas || {};
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (key.startsWith('$schemas.')) {
         schemas[key.replace('$schemas.', '')] = value;
       }
     }
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (key === '_meta' || key === '$schemas' || key.startsWith('$schemas.')) continue;
-      
+
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         html += renderNestedObject(key, value, schemas, values[key] || {}, '');
       } else {
@@ -214,7 +224,7 @@
         }
       }
     }
-    
+
     return html;
   }
 
@@ -222,12 +232,12 @@
     const regex = /([^.\[\]]+)|\[(\d+)\]/g;
     const parts = [];
     let match;
-    
+
     while ((match = regex.exec(path)) !== null) {
       if (match[1] !== undefined) parts.push(match[1]);
       else if (match[2] !== undefined) parts.push(parseInt(match[2], 10));
     }
-    
+
     let current = obj;
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i];
@@ -242,26 +252,26 @@
 
   function collectFormValues(container) {
     const result = {};
-    
+
     container.querySelectorAll('.promptcanvas-input, .promptcanvas-select, .promptcanvas-textarea').forEach(el => {
       const path = el.dataset.path;
       if (path) setNestedValue(result, path, el.value);
     });
-    
+
     container.querySelectorAll('[data-static="true"]').forEach(el => {
       const path = el.dataset.path;
       if (path) setNestedValue(result, path, el.textContent);
     });
-    
+
     return result;
   }
 
   function generateOutputObject(obj, values, schemas) {
     const output = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
       if (key.startsWith('$')) continue;
-      
+
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         output[key] = generateOutputObject(value, values[key] || {}, schemas);
       } else {
@@ -275,23 +285,23 @@
         }
       }
     }
-    
+
     return output;
   }
 
   function generateOutput(template, values) {
     const output = {};
     const schemas = template.$schemas || {};
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (key.startsWith('$schemas.')) {
         schemas[key.replace('$schemas.', '')] = value;
       }
     }
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (key === '_meta' || key === '$schemas' || key.startsWith('$schemas.')) continue;
-      
+
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         output[key] = generateOutputObject(value, values[key] || {}, schemas);
       } else {
@@ -305,17 +315,17 @@
         }
       }
     }
-    
+
     return output;
   }
 
   function transformArrayOutput(schemaName, items, schemas) {
     const schema = schemas[schemaName];
-    
+
     if (!schema || !Array.isArray(items)) {
       return items;
     }
-    
+
     if (typeof schema === 'string') {
       return items.map(item => {
         if (typeof item === 'object' && item !== null && 'value' in item) {
@@ -324,7 +334,7 @@
         return item;
       });
     }
-    
+
     return items;
   }
 
@@ -336,24 +346,24 @@
 
   function showFormModal(template, targetElement, triggerText) {
     hideFormModal();
-    
+
     currentTemplate = template;
     currentTargetElement = targetElement;
     currentTriggerText = triggerText;
-    
+
     const overlay = document.createElement('div');
     overlay.className = 'promptcanvas-overlay';
     overlay.innerHTML = createModalHTML(template);
-    
+
     document.body.appendChild(overlay);
     currentOverlay = overlay;
-    
+
     requestAnimationFrame(() => {
       overlay.classList.add('visible');
     });
-    
+
     setupModalEventListeners(overlay, template);
-    
+
     const firstInput = overlay.querySelector('.promptcanvas-input, .promptcanvas-select');
     if (firstInput) setTimeout(() => firstInput.focus(), 100);
   }
@@ -375,7 +385,7 @@
     const meta = template._meta || {};
     const title = meta.name || 'PromptCanvas';
     const formHtml = renderForm(template, {});
-    
+
     return `
       <div class="promptcanvas-modal">
         <div class="promptcanvas-header">
@@ -399,35 +409,35 @@
 
   function setupModalEventListeners(overlay, template) {
     const schemas = template.$schemas || {};
-    
+
     for (const [key, value] of Object.entries(template)) {
       if (key.startsWith('$schemas.')) {
         schemas[key.replace('$schemas.', '')] = value;
       }
     }
-    
+
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay || e.target.dataset.action === 'close') {
         hideFormModal();
       }
     });
-    
+
     overlay.addEventListener('click', (e) => {
       const action = e.target.dataset.action;
       if (action === 'insert') insertGeneratedOutput();
       else if (action === 'preview') togglePreview(overlay, template);
     });
-    
+
     overlay.addEventListener('click', (e) => {
       const addTo = e.target.dataset.addTo || e.target.closest('[data-add-to]')?.dataset.addTo;
       if (addTo) addArrayItem(overlay, addTo, schemas);
     });
-    
+
     overlay.addEventListener('click', (e) => {
       const deleteBtn = e.target.closest('[data-delete-from]');
       if (deleteBtn) deleteArrayItem(overlay, deleteBtn.dataset.deleteFrom, parseInt(deleteBtn.dataset.index, 10));
     });
-    
+
     overlay.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') hideFormModal();
       else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) insertGeneratedOutput();
@@ -437,21 +447,21 @@
   function addArrayItem(overlay, arrayPath, schemas) {
     const container = overlay.querySelector(`[data-array="${arrayPath}"]`);
     if (!container) return;
-    
+
     const schemaName = container.dataset.schema;
     const schema = schemas[schemaName];
     const existingItems = container.querySelectorAll(`[data-array-item="${arrayPath}"]`);
     const newIndex = existingItems.length;
     const key = arrayPath.split('.').pop().replace(/\[\d+\]$/, '');
-    
+
     const itemHtml = renderArrayItem(key, newIndex, schema, schemas, {}, arrayPath);
     const addBtn = container.querySelector(`[data-add-to="${arrayPath}"]`);
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = itemHtml;
     const newItem = tempDiv.firstElementChild;
-    
+
     container.insertBefore(newItem, addBtn);
-    
+
     const firstInput = newItem.querySelector('.promptcanvas-input, .promptcanvas-select');
     if (firstInput) firstInput.focus();
   }
@@ -459,11 +469,11 @@
   function deleteArrayItem(overlay, arrayPath, index) {
     const container = overlay.querySelector(`[data-array="${arrayPath}"]`);
     if (!container) return;
-    
+
     const itemToRemove = container.querySelector(`[data-array-item="${arrayPath}"][data-index="${index}"]`);
     if (itemToRemove) {
       itemToRemove.remove();
-      
+
       const remainingItems = container.querySelectorAll(`[data-array-item="${arrayPath}"]`);
       remainingItems.forEach((item, newIndex) => {
         item.dataset.index = newIndex;
@@ -481,7 +491,7 @@
   function togglePreview(overlay, template) {
     const previewPanel = overlay.querySelector('.promptcanvas-preview');
     const previewBtn = overlay.querySelector('[data-action="preview"]');
-    
+
     if (previewPanel.style.display === 'none') {
       const values = collectFormValues(overlay);
       const output = generateOutput(template, values);
@@ -496,15 +506,15 @@
 
   function insertGeneratedOutput() {
     if (!currentTemplate || !currentTargetElement) return;
-    
+
     const values = collectFormValues(currentOverlay);
     const output = generateOutput(currentTemplate, values);
     const jsonString = JSON.stringify(output, null, 2);
-    
+
     if (currentTargetElement.isContentEditable) {
       const currentValue = currentTargetElement.textContent || '';
       const triggerIndex = currentValue.lastIndexOf(currentTriggerText);
-      
+
       if (triggerIndex >= 0) {
         const before = currentValue.substring(0, triggerIndex);
         const after = currentValue.substring(triggerIndex + currentTriggerText.length);
@@ -515,7 +525,7 @@
     } else {
       const currentValue = currentTargetElement.value || '';
       const triggerIndex = currentValue.lastIndexOf(currentTriggerText);
-      
+
       if (triggerIndex >= 0) {
         const before = currentValue.substring(0, triggerIndex);
         const after = currentValue.substring(triggerIndex + currentTriggerText.length);
@@ -524,10 +534,10 @@
         currentTargetElement.value = currentValue + jsonString;
       }
     }
-    
+
     currentTargetElement.dispatchEvent(new Event('input', { bubbles: true }));
     currentTargetElement.dispatchEvent(new Event('change', { bubbles: true }));
-    
+
     hideFormModal();
     currentTargetElement.focus();
   }
@@ -537,23 +547,23 @@
 
   async function init() {
     triggers = await getAllTriggers();
-    
+
     chrome.runtime.onMessage.addListener((message) => {
       if (message.type === 'TRIGGERS_UPDATED') {
         triggers = message.triggers || [];
       }
     });
-    
+
     document.addEventListener('keydown', handleKeydown, true);
   }
 
   function handleKeydown(e) {
     if (e.key === ' ' || e.key === 'Tab') {
       const target = e.target;
-      
+
       if (isTextInput(target)) {
         const triggerInfo = detectTrigger(target);
-        
+
         if (triggerInfo) {
           e.preventDefault();
           activateTrigger(triggerInfo.trigger, target, triggerInfo.fullMatch);
@@ -565,16 +575,16 @@
   function detectTrigger(element) {
     const value = getInputValue(element);
     if (!value) return null;
-    
+
     const cursorPos = getCursorPosition(element);
     const textBeforeCursor = value.substring(0, cursorPos);
-    
+
     for (const trigger of triggers) {
       if (textBeforeCursor.endsWith(trigger)) {
         return { trigger, fullMatch: trigger, position: cursorPos - trigger.length };
       }
     }
-    
+
     return null;
   }
 
@@ -587,22 +597,22 @@
 
   function isTextInput(element) {
     if (!element) return false;
-    
+
     const tagName = element.tagName?.toLowerCase();
-    
+
     if (tagName === 'textarea') return true;
     if (tagName === 'input') {
       const type = element.type?.toLowerCase();
       return ['text', 'search', 'url', 'email', ''].includes(type);
     }
-    
+
     if (element.isContentEditable) return true;
-    
+
     if (element.classList) {
       const editorClasses = ['ProseMirror', 'ql-editor', 'ce-paragraph', 'notranslate'];
       if (editorClasses.some(cls => element.classList.contains(cls))) return true;
     }
-    
+
     return false;
   }
 
