@@ -114,7 +114,7 @@ function openEditor(templateId) {
       elements.editorTitle.textContent = "템플릿 편집";
       elements.templateName.value = template.name;
       elements.templateTrigger.value = template.trigger;
-      elements.templateJson.value = JSON.stringify(template.template, null, 2);
+      elements.templateJson.value = template.templateJson || JSON.stringify(template.template, null, 2);
       elements.deleteBtn.style.display = "block";
     }
   } else {
@@ -183,16 +183,12 @@ async function saveCurrentTemplate() {
     elements.templateTrigger.focus();
     return;
   }
-  templateObj._meta = {
-    name,
-    trigger,
-    outputFormat: "json"
-  };
   const templateData = {
     id: currentEditId,
     name,
     trigger,
-    template: templateObj
+    template: jsonStr
+    // Send raw JSON string to preserve exact key order
   };
   try {
     await chrome.runtime.sendMessage({ type: "SAVE_TEMPLATE", template: templateData });

@@ -5,7 +5,20 @@ async function getAllTemplates() {
 }
 async function getTemplateByTrigger(trigger) {
   const templates = await getAllTemplates();
-  return templates.find((t) => t.trigger === trigger);
+  const found = templates.find((t) => t.trigger === trigger);
+  if (found && found.templateJson) {
+    const parsed = JSON.parse(found.templateJson);
+    parsed._meta = {
+      name: found.name,
+      trigger: found.trigger,
+      outputFormat: "json"
+    };
+    return {
+      ...found,
+      template: parsed
+    };
+  }
+  return found;
 }
 async function saveTemplate(template) {
   const templates = await getAllTemplates();
@@ -14,7 +27,8 @@ async function saveTemplate(template) {
     id: template.id || generateId(),
     name: template.name,
     trigger: template.trigger,
-    template: template.template,
+    // Store as JSON string to preserve key order
+    templateJson: typeof template.template === "string" ? template.template : JSON.stringify(template.template),
     createdAt: template.createdAt || now,
     updatedAt: now
   };

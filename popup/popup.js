@@ -152,7 +152,8 @@ function openEditor(templateId) {
       elements.editorTitle.textContent = '템플릿 편집';
       elements.templateName.value = template.name;
       elements.templateTrigger.value = template.trigger;
-      elements.templateJson.value = JSON.stringify(template.template, null, 2);
+      // Use stored JSON string directly to preserve order
+      elements.templateJson.value = template.templateJson || JSON.stringify(template.template, null, 2);
       elements.deleteBtn.style.display = 'block';
     }
   } else {
@@ -236,18 +237,11 @@ async function saveCurrentTemplate() {
     return;
   }
   
-  // Add meta to template
-  templateObj._meta = {
-    name,
-    trigger,
-    outputFormat: 'json'
-  };
-  
   const templateData = {
     id: currentEditId,
     name,
     trigger,
-    template: templateObj
+    template: jsonStr  // Send raw JSON string to preserve exact key order
   };
   
   try {
