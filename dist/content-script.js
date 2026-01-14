@@ -396,10 +396,6 @@ function addArrayItem(overlay, arrayPath, schemas) {
 function deleteArrayItem(overlay, arrayPath, index) {
   const container = overlay.querySelector(`[data-array="${arrayPath}"]`);
   if (!container) return;
-  const items = container.querySelectorAll(`[data-array-item="${arrayPath}"]`);
-  if (items.length <= 1) {
-    return;
-  }
   const itemToRemove = container.querySelector(`[data-array-item="${arrayPath}"][data-index="${index}"]`);
   if (itemToRemove) {
     itemToRemove.remove();

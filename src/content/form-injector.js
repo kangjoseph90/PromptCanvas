@@ -188,13 +188,6 @@ function deleteArrayItem(overlay, arrayPath, index) {
   const container = overlay.querySelector(`[data-array="${arrayPath}"]`);
   if (!container) return;
 
-  const items = container.querySelectorAll(`[data-array-item="${arrayPath}"]`);
-
-  // Don't allow deleting the last item
-  if (items.length <= 1) {
-    return;
-  }
-
   // Find and remove the item
   const itemToRemove = container.querySelector(`[data-array-item="${arrayPath}"][data-index="${index}"]`);
   if (itemToRemove) {
